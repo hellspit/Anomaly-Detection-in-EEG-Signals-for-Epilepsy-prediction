@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Model Prediction</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Upload CSV for Prediction</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <label for="model">Select Model:</label>
+        <select name="model" id="model">
+            <option value="ann">ANN</option>
+            <option value="lru">LRU</option>
+            <option value="lstm">LSTM</option>
+        </select>
+        <br><br>
+        <input type="file" name="file" accept=".csv" required>
+        <br><br>
+        <button type="submit">Upload and Predict</button>
+    </form>
+
+    <div id="results" style="display:none;">
+        <h2>Predictions:</h2>
+        <ul id="predictionList"></ul>
+
+        <h2>Prediction Probabilities</h2>
+        <canvas id="probChart" width="400" height="200"></canvas>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('/uploadCsv', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                // Display predictions
+                const predictionList = document.getElementById('predictionList');
+                predictionList.innerHTML = '';
+                data.predictions.forEach((pred, index) => {
+                    const li = document.createElement('li');
+                    li.textContent = `Prediction: ${pred}, Probability: ${(data.probabilities[index] * 100).toFixed(2)}%`;
+                    predictionList.appendChild(li);
+                });
+
+                // Display graph
+                const ctx = document.getElementById('probChart').getContext('2d');
+                if (window.probChartInstance) {
+                    window.probChartInstance.destroy();
+                }
+                window.probChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.graph_data.labels,
+                        datasets: [{
+                            label: 'Prediction Probability',
+                            data: data.graph_data.probabilities,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 1
+                            }
+                        }
+                    }
+                });
+
+                // Show results
+                document.getElementById('results').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during prediction.');
+            });
+        });
+    </script>
+</body>
+</html>
