@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seizure Prediction Results</title>
+</head>
+<body>
+    <h1>Seizure Prediction Results</h1>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% else %}
+        <h2>Prediction Results</h2>
+        <p>Based on the input data, here is the percentage chance of having a seizure:</p>
+        <ul>
+            {% for prob in predictions %}
+                <li>{{ prob }}% chance of having a seizure</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <a href="/">Go Back</a>
+</body>
+</html>

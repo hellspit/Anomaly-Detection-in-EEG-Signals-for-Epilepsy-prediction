@@ -74,11 +74,11 @@ def upload_file():
     model_name = request.form.get('model', 'ann')
 
     if 'file' not in request.files:
-        return jsonify({"error": "No file part in the request"}), 400
+        return render_template('results3.html', error="No file part in the request"), 400
 
     file = request.files['file']
     if file.filename == '' or not file.filename.endswith('.csv'):
-        return jsonify({"error": "Please upload a valid CSV file."}), 400
+        return render_template('results3.html', error="Please upload a valid CSV file."), 400
 
     try:
         # Save the uploaded file
@@ -89,13 +89,15 @@ def upload_file():
         # Read the CSV file
         data = pd.read_csv(file_path)
         if data.empty:
-            return jsonify({"error": "Uploaded CSV file is empty."}), 400
+            return render_template('results3.html', error="Uploaded CSV file is empty."), 400
 
         # Make predictions
         predictions = predict(data.values, model_name)
-        return jsonify({"predictions": predictions.tolist()})
+        seizure_probabilities = predictions.tolist()  # Convert to list if needed
+
+        return render_template('results3.html', predictions=seizure_probabilities)
     except Exception as e:
-        return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
+        return render_template('results3.html', error=f"Prediction failed: {str(e)}"), 500
 
 @app.route('/getPrediction', methods=['GET'])
 def get_prediction():
