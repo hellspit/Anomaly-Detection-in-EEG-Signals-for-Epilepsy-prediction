@@ -137,6 +137,6 @@ def get_prediction():
                                graph_data=graph_data)
     except Exception as e:
         return render_template('results.html', error=str(e))
-
+#this is the main change in the code that solves a lot of the problem in the code.
 if __name__ == "__main__":
     app.run(debug=True)
